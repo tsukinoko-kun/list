@@ -6,18 +6,25 @@ import (
 	"os"
 
 	"github.com/Frank-Mayer/list/internal/list"
+	"github.com/Frank-Mayer/list/internal/version"
 )
 
 var (
 	table = flag.Bool("l", false, "list in table format")
 	all   = flag.Bool("a", false, "list hidden files")
 	tree  = flag.Bool("t", false, "list in tree format")
+	ves   = flag.Bool("v", false, "show version")
 )
 
 func main() {
-	fn := list.Default
-
 	flag.Parse()
+
+	if *ves {
+		fmt.Println(version.Version)
+		return
+	}
+
+	fn := list.Default
 
 	if *table {
 		fn = list.Table
