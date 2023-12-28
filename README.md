@@ -1,5 +1,7 @@
 # list
 
+[![Test](https://github.com/Frank-Mayer/list/actions/workflows/test.yml/badge.svg)](https://github.com/Frank-Mayer/list/actions/workflows/test.yml)
+
 `ls` replacement
 
 - `-t` showing recursive file tree (not compatible with `-l`)
