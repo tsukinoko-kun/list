@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"os/user"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/Frank-Mayer/list/internal/utils"
@@ -111,24 +109,9 @@ func tableEntry(p string, isDir bool, isSymlink bool, fi fs.FileInfo) (string, e
 		}
 	}
 
-	stat, ok := fi.Sys().(*syscall.Stat_t)
 	sb := strings.Builder{}
 	sb.Write(permsString)
-	if ok {
-		username := fmt.Sprintf("%d", stat.Uid)
-		usr, err := user.LookupId(username)
-		if err == nil {
-			username = usr.Username
-		}
-
-		groupname := fmt.Sprintf("%d", stat.Gid)
-		group, err := user.LookupGroupId(groupname)
-		if err == nil {
-			groupname = group.Name
-		}
-
-		sb.WriteString(fmt.Sprintf(" %4d %s %s", stat.Nlink, username, groupname))
-	}
+	sb.WriteString(utils.Owner(fi))
 	sb.WriteString(fmt.Sprintf(" %12s ", utils.FormatBytes(fi.Size())))
 	sb.WriteString(fi.ModTime().Format(time.RFC3339))
 	sb.WriteRune(' ')
