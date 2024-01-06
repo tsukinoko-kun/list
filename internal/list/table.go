@@ -22,7 +22,7 @@ func Table(p string, options *Options) error {
 
 	if fi.IsDir() {
 		if options.Hidden {
-			currentDirString, err := tableEntry(p, true, false, fi)
+			currentDirString, err := tableEntry(true, false, fi)
 			if err != nil {
 				return err
 			}
@@ -30,7 +30,7 @@ func Table(p string, options *Options) error {
 			cDir.Println("./")
 		}
 	} else {
-		currentDirString, err := tableEntry(p, false, false, fi)
+		currentDirString, err := tableEntry(false, false, fi)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func Table(p string, options *Options) error {
 			return errors.Join(errors.New("could not get file info for path "+absEntryPath), err)
 		}
 
-		tableEntryString, err := tableEntry(absEntryPath, isDir, isSymlink, fi)
+		tableEntryString, err := tableEntry(isDir, isSymlink, fi)
 		if err != nil {
 			return errors.Join(errors.New("could not get table entry for path "+absEntryPath), err)
 		}
@@ -78,7 +78,7 @@ func Table(p string, options *Options) error {
 	return nil
 }
 
-func tableEntry(p string, isDir bool, isSymlink bool, fi fs.FileInfo) (string, error) {
+func tableEntry(isDir bool, isSymlink bool, fi fs.FileInfo) (string, error) {
 	permsString := make([]byte, 13)
 	if isDir {
 		permsString[0] = 'd'
@@ -113,7 +113,7 @@ func tableEntry(p string, isDir bool, isSymlink bool, fi fs.FileInfo) (string, e
 	sb.Write(permsString)
 	sb.WriteString(utils.Owner(fi))
 	sb.WriteString(fmt.Sprintf(" %12s ", utils.FormatBytes(fi.Size())))
-	sb.WriteString(fi.ModTime().Format(time.RFC3339))
+	sb.WriteString(fi.ModTime().Format(time.DateTime))
 	sb.WriteRune(' ')
 
 	return sb.String(), nil
