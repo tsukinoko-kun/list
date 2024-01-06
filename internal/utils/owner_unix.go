@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-func Owner(fi fs.FileInfo) string {
+func Owner(fi fs.FileInfo) (string, string, string, error) {
 	var username, groupname, nlink string
 
 	stat, ok := fi.Sys().(*syscall.Stat_t)
@@ -29,5 +29,5 @@ func Owner(fi fs.FileInfo) string {
 		nlink = fmt.Sprintf("%d", stat.Nlink)
 	}
 
-	return fmt.Sprintf(" %4s %8s %8s", nlink, username, groupname)
+	return nlink, username, groupname, nil
 }

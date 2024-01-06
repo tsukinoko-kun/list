@@ -37,7 +37,7 @@ func Tree(p string, options *Options) error {
 		length := len(strings.Split(path, osPathSep)) - rootLength
 		print(repeat(segment, length))
 
-		err = printColored(path)
+		err = printStyled(path)
 		if err != nil {
 			return errors.Join(errors.New("could not print colored path for tree at path "+path), err)
 		}

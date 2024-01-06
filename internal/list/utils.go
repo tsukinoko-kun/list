@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/fatih/color"
 )
 
 const (
@@ -13,19 +14,28 @@ const (
 	executable = 0b001001001
 )
 
-func printColored(p string) error {
+func printStyled(p string) error {
+	content, c, err := printStyle(p)
+	if err != nil {
+		return err
+	}
+	c.Print(content)
+	return nil
+}
+
+func printStyle(p string) (string, *color.Color, error) {
 	content := filepath.Base(p)
-	color := cFile
+	c := cFile
 
 	isExec := false
 
 	fi, err := os.Lstat(p)
 	if err != nil {
-		return errors.Join(errors.New("could not get file info for path "+p), err)
+		return content, c, errors.Join(errors.New("could not get file info for path "+p), err)
 	}
 
 	if fi.IsDir() {
-		color = cDir
+		c = cDir
 		content += "/"
 	} else {
 		perm := fi.Mode().Perm()
@@ -35,22 +45,21 @@ func printColored(p string) error {
 	}
 
 	if fi.Mode()&os.ModeSymlink != 0 {
-		color = cLink
+		c = cLink
 		content += "@"
 	}
 
 	hidden, err := utils.IsHiddenFile(p)
 	if err != nil {
-		return errors.Join(errors.New("could not check if file is hidden for path "+p), err)
+		return content, c, errors.Join(errors.New("could not check if file is hidden for path "+p), err)
 	}
 	if hidden {
-		color = cHidden
+		c = cHidden
 	}
 
-	color.Print(content)
 	if isExec {
 		cExec.Print("*")
 	}
 
-	return nil
+	return content, c, nil
 }

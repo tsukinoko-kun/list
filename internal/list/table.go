@@ -2,11 +2,9 @@ package list
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/Frank-Mayer/list/internal/utils"
@@ -18,24 +16,30 @@ func Table(p string, options *Options) error {
 		return err
 	}
 
-	fmt.Printf("total %s\n", utils.FormatBytes(fi.Size()))
+	table := utils.NewTable(7)
 
 	if fi.IsDir() {
 		if options.Hidden {
-			currentDirString, err := tableEntry(true, false, fi)
+			te, err := tableEntry(table, true, false, fi)
 			if err != nil {
-				return err
+				return errors.Join(errors.New("could not create table entry for path "+p), err)
 			}
-			print(currentDirString)
-			cDir.Println("./")
+			err = te.AddCell("./")
+			if err != nil {
+				return errors.Join(errors.New("could not add cell to table at path "+p), err)
+			}
+			te.SetStyle(cDir)
 		}
 	} else {
-		currentDirString, err := tableEntry(false, false, fi)
+		te, err := tableEntry(table, false, false, fi)
 		if err != nil {
-			return err
+			return errors.Join(errors.New("could not create table entry for path "+p), err)
 		}
-		print(currentDirString)
-		cFile.Println(filepath.Base(p))
+		err = te.AddCell(filepath.Base(p))
+		if err != nil {
+			return errors.Join(errors.New("could not add cell to table at path "+p), err)
+		}
+		te.SetStyle(cFile)
 		return nil
 	}
 
@@ -43,6 +47,7 @@ func Table(p string, options *Options) error {
 	if err != nil {
 		return errors.Join(errors.New("could not read directory "+p), err)
 	}
+
 	for _, entry := range entries {
 		hidden, err := utils.IsHiddenFile(entry.Name())
 		if err != nil {
@@ -61,31 +66,35 @@ func Table(p string, options *Options) error {
 			return errors.Join(errors.New("could not get file info for path "+absEntryPath), err)
 		}
 
-		tableEntryString, err := tableEntry(isDir, isSymlink, fi)
+		te, err := tableEntry(table, isDir, isSymlink, fi)
 		if err != nil {
-			return errors.Join(errors.New("could not get table entry for path "+absEntryPath), err)
+			return errors.Join(errors.New("could not create table entry for path "+absEntryPath), err)
 		}
 
-		print(tableEntryString)
-		err = printColored(absEntryPath)
+		desplayName, style, err := printStyle(absEntryPath)
 		if err != nil {
-			println(name)
 			return errors.Join(errors.New("could not print colored path for table at path "+absEntryPath), err)
 		}
-		println()
+		err = te.AddCell(desplayName)
+		if err != nil {
+			return errors.Join(errors.New("could not add cell to table at path "+absEntryPath), err)
+		}
+		te.SetStyle(style)
 	}
+
+	table.Print()
 
 	return nil
 }
 
-func tableEntry(isDir bool, isSymlink bool, fi fs.FileInfo) (string, error) {
-	permsString := make([]byte, 13)
+func permsString(isDir bool, isSymlink bool, fi fs.FileInfo) string {
+	str := make([]byte, 13)
 	if isDir {
-		permsString[0] = 'd'
+		str[0] = 'd'
 	} else if isSymlink {
-		permsString[0] = 'l'
+		str[0] = 'l'
 	} else {
-		permsString[0] = '-'
+		str[0] = '-'
 	}
 
 	perms := fi.Mode().Perm()
@@ -93,28 +102,56 @@ func tableEntry(isDir bool, isSymlink bool, fi fs.FileInfo) (string, error) {
 	for i := 2; i >= 0; i-- {
 		localPerms := perms >> (i * 3) & 0b111
 		if localPerms&0b100 != 0 {
-			permsString[1+(3-i)*3] = 'r'
+			str[1+(3-i)*3] = 'r'
 		} else {
-			permsString[1+(3-i)*3] = '-'
+			str[1+(3-i)*3] = '-'
 		}
 		if localPerms&0b010 != 0 {
-			permsString[2+(3-i)*3] = 'w'
+			str[2+(3-i)*3] = 'w'
 		} else {
-			permsString[2+(3-i)*3] = '-'
+			str[2+(3-i)*3] = '-'
 		}
 		if localPerms&0b001 != 0 {
-			permsString[3+(3-i)*3] = 'x'
+			str[3+(3-i)*3] = 'x'
 		} else {
-			permsString[3+(3-i)*3] = '-'
+			str[3+(3-i)*3] = '-'
 		}
 	}
 
-	sb := strings.Builder{}
-	sb.Write(permsString)
-	sb.WriteString(utils.Owner(fi))
-	sb.WriteString(fmt.Sprintf(" %12s ", utils.FormatBytes(fi.Size())))
-	sb.WriteString(fi.ModTime().Format(time.DateTime))
-	sb.WriteRune(' ')
+	return string(str)
+}
 
-	return sb.String(), nil
+func tableEntry(t *utils.Table, isDir bool, isSymlink bool, fi fs.FileInfo) (*utils.TableEntry, error) {
+	te := t.NewEntry()
+	var err error
+	err = te.AddCell(permsString(isDir, isSymlink, fi))
+	if err != nil {
+		return nil, errors.Join(errors.New("could not add cell to table"), err)
+	}
+
+	username, groupname, nlink, err := utils.Owner(fi)
+	if err == nil {
+		err = te.AddCell(username)
+		if err != nil {
+			return nil, errors.Join(errors.New("could not add cell to table"), err)
+		}
+		err = te.AddCell(groupname)
+		if err != nil {
+			return nil, errors.Join(errors.New("could not add cell to table"), err)
+		}
+		err = te.AddCell(nlink)
+		if err != nil {
+			return nil, errors.Join(errors.New("could not add cell to table"), err)
+		}
+	}
+	err = te.AddCell(utils.FormatBytes(fi.Size()))
+	if err != nil {
+		return nil, errors.Join(errors.New("could not add cell to table"), err)
+	}
+	err = te.AddCell(fi.ModTime().Format(time.DateTime))
+	if err != nil {
+		return nil, errors.Join(errors.New("could not add cell to table"), err)
+	}
+
+	return te, nil
 }

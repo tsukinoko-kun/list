@@ -16,7 +16,7 @@ func Default(p string, options *Options) error {
 	}
 
 	if !fi.IsDir() {
-		err = printColored(p)
+		err = printStyled(p)
 		if err != nil {
 			return err
 		}
@@ -38,7 +38,7 @@ func Default(p string, options *Options) error {
 		if !options.Hidden && hidden {
 			continue
 		}
-		err = printColored(absEntryPath)
+		err = printStyled(absEntryPath)
 		if err != nil {
 			return err
 		}
