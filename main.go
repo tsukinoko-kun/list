@@ -1,23 +1,24 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 
 	"github.com/Frank-Mayer/list/internal/list"
 	"github.com/Frank-Mayer/list/internal/version"
+	"github.com/alecthomas/kingpin/v2"
 )
 
 var (
-	table = flag.Bool("l", false, "list in table format")
-	all   = flag.Bool("a", false, "list hidden files")
-	tree  = flag.Bool("t", false, "list in tree format")
-	ves   = flag.Bool("v", false, "show version")
+	paths = kingpin.Arg("paths", "the files(s) and/or folder(s) to display").Default(".").Strings()
+	all   = kingpin.Flag("all", "show hidden files").Short('a').Bool()
+	table = kingpin.Flag("table", "list in table format").Short('l').Bool()
+	tree  = kingpin.Flag("tree", "list in tree format").Short('t').Bool()
+	ves   = kingpin.Flag("version", "show version").Short('v').Bool()
 )
 
 func main() {
-	flag.Parse()
+	kingpin.Parse()
 
 	if *ves {
 		fmt.Println(version.Version)
@@ -38,14 +39,13 @@ func main() {
 	}
 
 	var err error
-	restArgs := flag.Args()
-	switch len(restArgs) {
+	switch len(*paths) {
 	case 0:
 		err = fn(".", options)
 	case 1:
-		err = fn(restArgs[0], options)
+		err = fn((*paths)[0], options)
 	default:
-		for i, arg := range restArgs {
+		for i, arg := range *paths {
 			if i > 0 {
 				println()
 			}

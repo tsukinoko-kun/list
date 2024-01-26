@@ -58,7 +58,7 @@ func printStyle(p string) (string, *color.Color, error) {
 	}
 
 	if isExec {
-		cExec.Print("*")
+		content = cExec.Sprint("*") + content
 	}
 
 	return content, c, nil
