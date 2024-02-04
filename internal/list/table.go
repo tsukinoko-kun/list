@@ -1,13 +1,13 @@
 package list
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/pkg/errors"
 )
 
 func Table(p string, options *Options) error {
@@ -22,22 +22,22 @@ func Table(p string, options *Options) error {
 		if options.Hidden {
 			te, err := tableEntry(table, true, false, fi)
 			if err != nil {
-				return errors.Join(errors.New("could not create table entry for path "+p), err)
+				return errors.Wrap(err,"could not create table entry for path "+p)
 			}
 			err = te.AddCell("./")
 			if err != nil {
-				return errors.Join(errors.New("could not add cell to table at path "+p), err)
+				return errors.Wrap(err, "could not add cell to table at path "+p)
 			}
 			te.SetStyle(cDir)
 		}
 	} else {
 		te, err := tableEntry(table, false, false, fi)
 		if err != nil {
-			return errors.Join(errors.New("could not create table entry for path "+p), err)
+			return errors.Wrap(err, "could not create table entry for path "+p)
 		}
 		err = te.AddCell(filepath.Base(p))
 		if err != nil {
-			return errors.Join(errors.New("could not add cell to table at path "+p), err)
+			return errors.Wrap(err, "could not add cell to table at path "+p)
 		}
 		te.SetStyle(cFile)
 		return nil
@@ -45,13 +45,13 @@ func Table(p string, options *Options) error {
 
 	entries, err := os.ReadDir(p)
 	if err != nil {
-		return errors.Join(errors.New("could not read directory "+p), err)
+		return errors.Wrap(err, "could not read directory "+p)
 	}
 
 	for _, entry := range entries {
 		hidden, err := utils.IsHiddenFile(entry.Name())
 		if err != nil {
-			return errors.Join(errors.New("could not check if file is hidden"), err)
+			return errors.Wrap(err, "could not check if file is hidden")
 		}
 		if !options.Hidden && hidden {
 			continue
@@ -63,21 +63,21 @@ func Table(p string, options *Options) error {
 		absEntryPath := filepath.Join(p, name)
 		fi, err := entry.Info()
 		if err != nil {
-			return errors.Join(errors.New("could not get file info for path "+absEntryPath), err)
+			return errors.Wrap(err, "could not get file info for path "+absEntryPath)
 		}
 
 		te, err := tableEntry(table, isDir, isSymlink, fi)
 		if err != nil {
-			return errors.Join(errors.New("could not create table entry for path "+absEntryPath), err)
+			return errors.Wrap(err, "could not create table entry for path "+absEntryPath)
 		}
 
 		desplayName, style, err := printStyle(absEntryPath)
 		if err != nil {
-			return errors.Join(errors.New("could not print colored path for table at path "+absEntryPath), err)
+			return errors.Wrap(err, "could not print colored path for table at path "+absEntryPath)
 		}
 		err = te.AddCell(desplayName)
 		if err != nil {
-			return errors.Join(errors.New("could not add cell to table at path "+absEntryPath), err)
+			return errors.Wrap(err, "could not add cell to table at path "+absEntryPath)
 		}
 		te.SetStyle(style)
 	}
@@ -126,31 +126,31 @@ func tableEntry(t *utils.Table, isDir bool, isSymlink bool, fi fs.FileInfo) (*ut
 	var err error
 	err = te.AddCell(permsString(isDir, isSymlink, fi))
 	if err != nil {
-		return nil, errors.Join(errors.New("could not add cell to table"), err)
+		return nil, errors.Wrap(err, "could not add cell to table")
 	}
 
 	username, groupname, nlink, err := utils.Owner(fi)
 	if err == nil {
 		err = te.AddCell(username)
 		if err != nil {
-			return nil, errors.Join(errors.New("could not add cell to table"), err)
+			return nil, errors.Wrap(err, "could not add cell to table")
 		}
 		err = te.AddCell(groupname)
 		if err != nil {
-			return nil, errors.Join(errors.New("could not add cell to table"), err)
+			return nil, errors.Wrap(err, "could not add cell to table")
 		}
 		err = te.AddCell(nlink)
 		if err != nil {
-			return nil, errors.Join(errors.New("could not add cell to table"), err)
+			return nil, errors.Wrap(err, "could not add cell to table")
 		}
 	}
 	err = te.AddCell(utils.FormatBytes(fi.Size()))
 	if err != nil {
-		return nil, errors.Join(errors.New("could not add cell to table"), err)
+		return nil, errors.Wrap(err, "could not add cell to table")
 	}
 	err = te.AddCell(fi.ModTime().Format(time.DateTime))
 	if err != nil {
-		return nil, errors.Join(errors.New("could not add cell to table"), err)
+		return nil, errors.Wrap(err, "could not add cell to table")
 	}
 
 	return te, nil

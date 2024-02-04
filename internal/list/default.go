@@ -1,18 +1,18 @@
 package list
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/pkg/errors"
 )
 
 func Default(p string, options *Options) error {
 	// check if path is a directory
 	fi, err := os.Stat(p)
 	if err != nil {
-		return errors.Join(errors.New("could not get file info for path "+p), err)
+		return errors.Wrap(err, "could not get file info for path "+p)
 	}
 
 	if !fi.IsDir() {
@@ -33,7 +33,7 @@ func Default(p string, options *Options) error {
 		absEntryPath := filepath.Join(p, entry.Name())
 		hidden, err := utils.IsHiddenFile(absEntryPath)
 		if err != nil {
-			return errors.Join(errors.New("could not check if file is hidden at path "+absEntryPath), err)
+			return errors.Wrap(err,"could not check if file is hidden at path "+absEntryPath)
 		}
 		if !options.Hidden && hidden {
 			continue

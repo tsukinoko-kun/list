@@ -14,6 +14,7 @@ var (
 	all   = kingpin.Flag("all", "show hidden files").Short('a').Bool()
 	table = kingpin.Flag("table", "list in table format").Short('l').Bool()
 	tree  = kingpin.Flag("tree", "list in tree format").Short('t').Bool()
+	count = kingpin.Flag("count", "count the files").Short('c').Bool()
 	ves   = kingpin.Flag("version", "show version").Short('v').Bool()
 )
 
@@ -32,6 +33,9 @@ func main() {
 	}
 	if *tree {
 		fn = list.Tree
+	}
+	if *count {
+		fn = list.Count
 	}
 
 	options := &list.Options{

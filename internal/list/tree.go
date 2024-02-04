@@ -1,13 +1,13 @@
 package list
 
 import (
-	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -17,18 +17,18 @@ const (
 func Tree(p string, options *Options) error {
 	abs, err := filepath.Abs(p)
 	if err != nil {
-		return errors.Join(errors.New("could not get absolute path for tree of path "+p), err)
+		return errors.Wrap(err, "could not get absolute path for tree of path "+p)
 	}
 	rootLength := len(strings.Split(abs, osPathSep))
 
 	err = walk(p, options.Hidden, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return errors.Join(errors.New("to level walk function passed error"), err)
+			return errors.Wrap(err, "to level walk function passed error")
 		}
 
 		hidden, err := utils.IsHiddenFile(path)
 		if err != nil {
-			return errors.Join(errors.New("could not check if file is hidden for tree at path "+path), err)
+			return errors.Wrap(err, "could not check if file is hidden for tree at path "+path)
 		}
 		if !options.Hidden && hidden {
 			return nil
@@ -39,7 +39,7 @@ func Tree(p string, options *Options) error {
 
 		err = printStyled(path)
 		if err != nil {
-			return errors.Join(errors.New("could not print colored path for tree at path "+path), err)
+			return errors.Wrap(err, "could not print colored path for tree at path "+path)
 		}
 
 		println()
@@ -47,7 +47,7 @@ func Tree(p string, options *Options) error {
 	})
 
 	if err != nil {
-		return errors.Join(errors.New("could not walk path for tree at path "+p), err)
+		return errors.Wrap(err, "could not walk path for tree at path "+p)
 	}
 
 	return nil
@@ -65,20 +65,20 @@ func walk(root string, all bool, fn filepath.WalkFunc) error {
 	q := utils.NewStack[string]()
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
-		return errors.Join(errors.New("could not get absolute path for walk of path "+root), err)
+		return errors.Wrap(err, "could not get absolute path for walk of path "+root)
 	}
 	q.Push(absRoot)
 
 	for qEntry := q.Pop(); qEntry != nil; qEntry = q.Pop() {
 		fi, err := os.Lstat(*qEntry)
 		if err != nil {
-			return errors.Join(errors.New("could not get file info in walk for path "+*qEntry), err)
+			return errors.Wrap(err, "could not get file info in walk for path "+*qEntry)
 		}
 
 		if !all {
 			hidden, err := utils.IsHiddenFile(*qEntry)
 			if err != nil {
-				return errors.Join(errors.New("could not check if file is hidden for walk at path "+*qEntry), err)
+				return errors.Wrap(err, "could not check if file is hidden for walk at path "+*qEntry)
 			}
 			if hidden {
 				continue
@@ -92,7 +92,7 @@ func walk(root string, all bool, fn filepath.WalkFunc) error {
 				if os.IsPermission(err) {
 					continue
 				}
-				return errors.Join(errors.New("could not read directory "+*qEntry), err)
+				return errors.Wrap(err, "could not read directory "+*qEntry)
 			}
 
 			var dirEntry fs.DirEntry
@@ -105,7 +105,7 @@ func walk(root string, all bool, fn filepath.WalkFunc) error {
 
 		err = fn(*qEntry, fi, nil)
 		if err != nil {
-			return errors.Join(errors.New("could not execute walk file tree function for path "+*qEntry), err)
+			return errors.Wrap(err, "could not execute walk file tree function for path "+*qEntry)
 		}
 	}
 

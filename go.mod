@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/fatih/color v1.16.0
+	github.com/pkg/errors v0.9.1
 )
 
 require (

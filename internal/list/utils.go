@@ -1,12 +1,12 @@
 package list
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/Frank-Mayer/list/internal/utils"
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -31,7 +31,7 @@ func printStyle(p string) (string, *color.Color, error) {
 
 	fi, err := os.Lstat(p)
 	if err != nil {
-		return content, c, errors.Join(errors.New("could not get file info for path "+p), err)
+		return content, c, errors.Wrap(err,"could not get file info for path "+p)
 	}
 
 	if fi.IsDir() {
@@ -51,7 +51,7 @@ func printStyle(p string) (string, *color.Color, error) {
 
 	hidden, err := utils.IsHiddenFile(p)
 	if err != nil {
-		return content, c, errors.Join(errors.New("could not check if file is hidden for path "+p), err)
+		return content, c, errors.Wrap(err, "could not check if file is hidden for path "+p)
 	}
 	if hidden {
 		c = cHidden
