@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/tsukinoko-kun/list/internal/utils"
 	"github.com/pkg/errors"
 )
 

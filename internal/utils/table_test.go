@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/Frank-Mayer/list/internal/utils"
+	"github.com/tsukinoko-kun/list/internal/utils"
 )
 
 func TestTable(t *testing.T) {

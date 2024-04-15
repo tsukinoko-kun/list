@@ -1,6 +1,6 @@
 # list
 
-[![Test](https://github.com/Frank-Mayer/list/actions/workflows/test.yml/badge.svg)](https://github.com/Frank-Mayer/list/actions/workflows/test.yml)
+[![Test](https://github.com/tsukinoko-kun/list/actions/workflows/test.yml/badge.svg)](https://github.com/tsukinoko-kun/list/actions/workflows/test.yml)
 
 `ls` replacement
 
@@ -11,5 +11,5 @@
 ## Install
 
 ```bash
-go install github.com/Frank-Mayer/list@latest
+go install github.com/tsukinoko-kun/list@latest
 ```

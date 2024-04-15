@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Frank-Mayer/list/internal/list"
-	"github.com/Frank-Mayer/list/internal/version"
+	"github.com/tsukinoko-kun/list/internal/list"
+	"github.com/tsukinoko-kun/list/internal/version"
 	"github.com/alecthomas/kingpin/v2"
 )
 

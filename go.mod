@@ -1,4 +1,4 @@
-module github.com/Frank-Mayer/list
+module github.com/tsukinoko-kun/list
 
 go 1.21.5
 
