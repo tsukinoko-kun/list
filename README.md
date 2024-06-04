@@ -10,6 +10,10 @@
 
 ## Install
 
-```bash
+```shell
 go install github.com/tsukinoko-kun/list@latest
+```
+
+```shell
+brew install tsukinoko-kun/tap/list
 ```
